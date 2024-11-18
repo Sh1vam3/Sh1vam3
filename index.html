@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Health Predictor</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+        
+        :root {
+            --primary: #2563eb;
+            --accent: #f43f5e;
+            --background: #f8fafc;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background);
+            color: #374151;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-field {
+            border: 1px solid #e5e7eb;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .predict-button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .predict-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .result-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .accuracy-badge {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    <span class="ml-3 text-xl font-semibold text-gray-800">Heart Health Predictor</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex items-center justify-center">
+        <div class="max-w-xl w-full px-4 py-12">
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-extrabold gradient-text">Heart Disease Risk Assessment</h1>
+                <p class="mt-2 text-gray-600">Analyze your heart health risk factors with ease using AI.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                <div class="flex justify-center mb-6">
+                    <span class="accuracy-badge text-white text-sm font-medium px-4 py-1 rounded-full">
+                        Model Accuracy: 92.5%
+                    </span>
+                </div>
+
+                <form id="predictionForm" class="space-y-6">
+                    <div>
+                        <label for="age" class="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                        <input type="number" id="age" required 
+                               class="input-field block w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none"
+                               placeholder="Enter your age">
+                    </div>
+
+                    <div>
+                        <label for="cp" class="block text-sm font-medium text-gray-700 mb-1">Chest Pain Type</label>
+                        <select id="cp" required 
+                                class="input-field block w-full px-4 py-3 rounded-lg text-gray-900 focus:outline-none">
+                            <option value="" disabled selected>Select pain type</option>
+                            <option value="0">Typical Angina (0)</option>
+                            <option value="1">Atypical Angina (1)</option>
+                            <option value="2">Non-Anginal Pain (2)</option>
+                            <option value="3">Asymptomatic (3)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="thalach" class="block text-sm font-medium text-gray-700 mb-1">Maximum Heart Rate</label>
+                        <input type="number" id="thalach" required 
+                               class="input-field block w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none"
+                               placeholder="Enter maximum heart rate">
+                    </div>
+
+                    <button type="submit" 
+                            class="predict-button w-full py-3 px-6 text-white font-medium rounded-lg">
+                        Analyze Risk
+                    </button>
+                </form>
+            </div>
+
+            <div id="result" class="result-card hidden rounded-xl p-6 text-center"></div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center text-gray-500 text-sm">
+            <p>Made with ❤️ by Shivam & Shagun</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const age = document.getElementById('age').value;
+            const cp = document.getElementById('cp').value;
+            const thalach = document.getElementById('thalach').value;
+
+            const button = e.target.querySelector('button');
+            const originalText = button.textContent;
+            button.textContent = 'Analyzing...';
+            button.disabled = true;
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ age, cp, thalach })
+                });
+
+                const result = await response.json();
+                const resultDiv = document.getElementById('result');
+                resultDiv.classList.remove('hidden');
+                resultDiv.innerHTML = `
+                    <div class="text-lg font-medium ${result.prediction.includes('risk') ? 'text-red-500' : 'text-green-500'}">
+                        ${result.prediction}
+                    </div>`;
+            } catch {
+                alert('Error connecting to the server.');
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
